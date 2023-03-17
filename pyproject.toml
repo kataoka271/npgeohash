@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "npgeohash"
+version = "0.1.0"
+description = ""
+authors = ["Hiroaki Kataoka <k_hir@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numba = "^0.56.4"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyterlab = "^3.6.1"
+matplotlib = "^3.7.1"
+folium = "^0.14.0"
+black = "^23.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
