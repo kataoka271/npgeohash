@@ -1,9 +1,10 @@
+from collections import defaultdict
 from math import ceil, cos, floor, pi, sqrt
-from typing import Iterator
+from typing import Iterable, Iterator
 
 import numpy as np
-import numpy.typing as npt
 from numba import njit
+from numpy.typing import NDArray
 
 base = "0123456789bcdefghjkmnpqrstuvwxyz"
 
@@ -171,29 +172,51 @@ dtype = "U12"  # np.dtype([("hash", "i8"), ("code", "U10")])
 
 
 @njit
-def encode_array(array, precision) -> npt.NDArray[np.ubyte]:
+def encode_array(array: NDArray[np.float_], precision: int) -> NDArray[np.str_]:
     values = np.empty(array.shape[0], dtype=dtype)
     for i in range(array.shape[0]):
         values[i] = encode(array[i, 0], array[i, 1], precision)
     return values
 
 
+@njit
+def isin(poi: NDArray[np.str_], codes: NDArray[np.str_]) -> NDArray[np.bool8]:
+    arr = np.full(poi.shape[0], False)
+    for i in range(poi.shape[0]):
+        for j in range(codes.shape[0]):
+            s = poi[i]
+            t = codes[j]
+            arr[i] = arr[i] or s.startswith(t) or t.startswith(s)
+    return arr
+
+
 # the following functions cannot support numba compilation due to unsupported type/operation needed
 
 
-def many_neighbors(codes) -> set[str]:
+def isin_circle(poi: NDArray[np.str_], lat: float, lon: float, radius: float, precision: int) -> NDArray[np.bool8]:
+    return isin(poi, np.fromiter(create_circle(lat, lon, radius, precision), dtype=dtype))
+
+
+def many_neighbors(codes: Iterable[str]) -> set[str]:
     S = set()
     for code in codes:
         S.update(neighbors(code))
     return S
 
 
-def isin_circle(codes, lat, lon, radius, precision) -> npt.NDArray[np.bool8]:
-    arr = np.full(codes.shape[0], False)
-    for code in create_circle(lat, lon, radius, precision):
-        arr = arr | np.char.startswith(codes, code)
-    return arr
-
-
-def _slice(arr, start, end) -> npt.NDArray:
-    return np.frombuffer(arr.view((str, 1)).reshape(len(arr), -1)[:, start:end].tobytes(), dtype=(str, end - start))
+def compress(codes: Iterable[str], *, accuracy: float = 1.0) -> list[str]:
+    input_codes = list(codes)
+    while True:
+        d = defaultdict(list)
+        for c in input_codes:
+            d[c[:-1]].append(c)
+        compressed = []
+        for c, v in d.items():
+            if len(v) >= 32 * accuracy:
+                compressed.append(c)
+            else:
+                compressed.extend(v)
+        if len(input_codes) == len(compressed):
+            break
+        input_codes = compressed
+    return compressed
