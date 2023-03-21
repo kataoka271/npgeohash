@@ -180,7 +180,7 @@ def encode_array(array: NDArray[np.float_], precision: int) -> NDArray[np.str_]:
 
 
 @njit
-def isin(poi: NDArray[np.str_], codes: NDArray[np.str_]) -> NDArray[np.bool8]:
+def _isin(poi: NDArray[np.str_], codes: NDArray[np.str_]) -> NDArray[np.bool8]:
     arr = np.full(poi.shape[0], False)
     for i in range(poi.shape[0]):
         for j in range(codes.shape[0]):
@@ -190,11 +190,18 @@ def isin(poi: NDArray[np.str_], codes: NDArray[np.str_]) -> NDArray[np.bool8]:
     return arr
 
 
+def isin(poi: NDArray[np.str_], codes: Iterable[str]):
+    if isinstance(codes, np.ndarray):
+        return _isin(poi, codes)
+    else:
+        return _isin(poi, np.fromiter(codes, dtype=dtype))
+
+
 # the following functions cannot support numba compilation due to unsupported type/operation needed
 
 
 def isin_circle(poi: NDArray[np.str_], lat: float, lon: float, radius: float, precision: int) -> NDArray[np.bool8]:
-    return isin(poi, np.fromiter(create_circle(lat, lon, radius, precision), dtype=dtype))
+    return isin(poi, create_circle(lat, lon, radius, precision))
 
 
 def many_neighbors(codes: Iterable[str]) -> set[str]:

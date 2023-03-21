@@ -1,5 +1,15 @@
 # npgeohash - Create Geohash on NumPy
 
+## Installation
+
+```shell
+poetry add git+https://github.com/kataoka271/npgeohash.git
+```
+or
+```shell
+pip install git+https://github.com/kataoka271/npgeohash.git
+```
+
 ## Usage
 
 
@@ -203,7 +213,7 @@ nei = npgeohash.many_neighbors(npgeohash.many_neighbors(geohashes))
 print(nei)
 ```
 
-    {'xn774bs', 'xn7770u', 'xn7770p', 'xn7770z', 'xn77h2k', 'xn77728', 'xn7772b', 'xn775py', 'xn774bv', 'xn7770j', 'xn77h2n', 'xn774ck', 'xn774cs', 'xn77h26', 'xn775rb', 'xn7770k', 'xn7770y', 'xn775pv', 'xn774cx', 'xn7770m', 'xn774cr', 'xn77510', 'xn77518', 'xn774bx', 'xn774cn', 'xn76uru', 'xn77h2e', 'xn76urf', 'xn775pz', 'xn774by', 'xn774ch', 'xn7770x', 'xn774cw', 'xn77h2s', 'xn77h2u', 'xn77h2m', 'xn77h2t', 'xn77h27', 'xn76ury', 'xn774cq', 'xn7750b', 'xn774bz', 'xn775pu', 'xn77h2w', 'xn774ct', 'xn77h25', 'xn77512', 'xn76urg', 'xn77720', 'xn77h2g', 'xn7770s', 'xn7770n', 'xn76urv', 'xn77h2v', 'xn774cm', 'xn7770v', 'xn774bw', 'xn77h2h', 'xn77h2q', 'xn774cp', 'xn7770w', 'xn77h2y', 'xn77h24', 'xn7770h', 'xn77508', 'xn774cj', 'xn77h2j', 'xn77h2f', 'xn774bu', 'xn7770q', 'xn774bt', 'xn77h2d', 'xn7770t', 'xn77722', 'xn7770r'}
+    {'xn7770j', 'xn774bu', 'xn7770x', 'xn77h25', 'xn77h26', 'xn77h2m', 'xn774ck', 'xn775pu', 'xn774cm', 'xn76urf', 'xn77h2w', 'xn7770u', 'xn774cj', 'xn774cq', 'xn77h2e', 'xn775pz', 'xn7770y', 'xn774cn', 'xn775rb', 'xn775pv', 'xn7770t', 'xn7770n', 'xn774cr', 'xn77512', 'xn7770h', 'xn76urg', 'xn774bv', 'xn77h2q', 'xn7770q', 'xn77728', 'xn77h2d', 'xn76urv', 'xn774bz', 'xn774ch', 'xn7770r', 'xn774by', 'xn7770v', 'xn774bs', 'xn774bt', 'xn774ct', 'xn77h2k', 'xn76uru', 'xn77518', 'xn76ury', 'xn7770m', 'xn77h24', 'xn77h2n', 'xn7770k', 'xn774cx', 'xn774bx', 'xn7770w', 'xn775py', 'xn77h2u', 'xn77h2v', 'xn77510', 'xn77h2h', 'xn7772b', 'xn774cw', 'xn774bw', 'xn77h2j', 'xn77h2g', 'xn77h2s', 'xn7770z', 'xn77508', 'xn774cp', 'xn77720', 'xn77h2y', 'xn774cs', 'xn77h27', 'xn7750b', 'xn77722', 'xn77h2f', 'xn7770p', 'xn7770s', 'xn77h2t'}
     
 
 
@@ -285,7 +295,7 @@ showmap(mp, "./images/07.png")
 ```python
 cir = npgeohash.create_circle(lat, lon, 1000, 8)
 compressed = npgeohash.compress(cir, accuracy=1.0)
-isin = npgeohash.isin(poi_geohashes, np.array(compressed))
+isin = npgeohash.isin(poi_geohashes, compressed)
 
 mp = Map()
 drawbox(mp, compressed, "blue")
