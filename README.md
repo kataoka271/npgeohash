@@ -143,15 +143,15 @@ This function checks geohashes is within radius on (`latitude`, `longitude`).
 
 ```python
 poi = np.array(
-        [
-            [35.69240645093, 139.7034750767164],
-            [35.691255831981294, 139.69025228754268],
-            [35.68307317410146, 139.71622562341963],
-            [35.70071598380815, 139.69749333875686],
-            [35.68997734701496, 139.6847427920536],
-            [35.68115524225217, 139.68584469115146],
-        ]
-    )
+    [
+        [35.69240645093, 139.7034750767164],
+        [35.691255831981294, 139.69025228754268],
+        [35.68307317410146, 139.71622562341963],
+        [35.70071598380815, 139.69749333875686],
+        [35.68997734701496, 139.6847427920536],
+        [35.68115524225217, 139.68584469115146],
+    ]
+)
 lat, lon = 35.68952987243547, 139.69953972279566
 
 poi_geohashes = npgeohash.encode_array(poi, 7)
@@ -198,7 +198,6 @@ for contain, latlon in zip(isin, poi):
 
 mp.fit_bounds(mp.get_bounds())
 showmap(mp, "./images/03.png")
-
 ```
 
 
@@ -213,7 +212,7 @@ nei = npgeohash.many_neighbors(npgeohash.many_neighbors(geohashes))
 print(nei)
 ```
 
-    {'xn7770j', 'xn774bu', 'xn7770x', 'xn77h25', 'xn77h26', 'xn77h2m', 'xn774ck', 'xn775pu', 'xn774cm', 'xn76urf', 'xn77h2w', 'xn7770u', 'xn774cj', 'xn774cq', 'xn77h2e', 'xn775pz', 'xn7770y', 'xn774cn', 'xn775rb', 'xn775pv', 'xn7770t', 'xn7770n', 'xn774cr', 'xn77512', 'xn7770h', 'xn76urg', 'xn774bv', 'xn77h2q', 'xn7770q', 'xn77728', 'xn77h2d', 'xn76urv', 'xn774bz', 'xn774ch', 'xn7770r', 'xn774by', 'xn7770v', 'xn774bs', 'xn774bt', 'xn774ct', 'xn77h2k', 'xn76uru', 'xn77518', 'xn76ury', 'xn7770m', 'xn77h24', 'xn77h2n', 'xn7770k', 'xn774cx', 'xn774bx', 'xn7770w', 'xn775py', 'xn77h2u', 'xn77h2v', 'xn77510', 'xn77h2h', 'xn7772b', 'xn774cw', 'xn774bw', 'xn77h2j', 'xn77h2g', 'xn77h2s', 'xn7770z', 'xn77508', 'xn774cp', 'xn77720', 'xn77h2y', 'xn774cs', 'xn77h27', 'xn7750b', 'xn77722', 'xn77h2f', 'xn7770p', 'xn7770s', 'xn77h2t'}
+    {'xn774cp', 'xn774cm', 'xn76uru', 'xn77h26', 'xn774ck', 'xn774by', 'xn7750b', 'xn77508', 'xn774ch', 'xn7770j', 'xn77728', 'xn77h2h', 'xn7770s', 'xn77h2j', 'xn774bs', 'xn774bw', 'xn77h2y', 'xn76urv', 'xn7770v', 'xn7770u', 'xn775rb', 'xn775py', 'xn7770y', 'xn77h2e', 'xn77h25', 'xn775pu', 'xn77h2f', 'xn774cj', 'xn774cq', 'xn77h2q', 'xn77510', 'xn774bx', 'xn77h2u', 'xn775pz', 'xn7770w', 'xn7770t', 'xn7772b', 'xn774cs', 'xn774bv', 'xn774bu', 'xn77h2t', 'xn774cw', 'xn7770n', 'xn7770p', 'xn7770z', 'xn77h24', 'xn7770h', 'xn7770r', 'xn77h2s', 'xn77518', 'xn77512', 'xn7770q', 'xn774cx', 'xn774ct', 'xn76urg', 'xn77h2k', 'xn7770m', 'xn76urf', 'xn7770x', 'xn774bz', 'xn774bt', 'xn77h2m', 'xn77h2g', 'xn77h2n', 'xn7770k', 'xn77h2v', 'xn77h2w', 'xn774cn', 'xn77722', 'xn77720', 'xn77h2d', 'xn76ury', 'xn77h27', 'xn774cr', 'xn775pv'}
     
 
 
@@ -287,6 +286,25 @@ showmap(mp, "./images/07.png")
 
 
 ![](./images/07.png)
+
+
+Obsured recursive compress is executed as below.
+
+
+```python
+cir = npgeohash.create_circle(lat, lon, 1000, 8)
+compressed = npgeohash.compress(cir, accuracy=0.6)
+
+mp = Map()
+drawbox(mp, compressed, "blue")
+Marker([lat, lon]).add_to(mp)
+Circle([lat, lon], 1000, color="yellow").add_to(mp)
+mp.fit_bounds(mp.get_bounds())
+showmap(mp, "./images/09.png")
+```
+
+
+![](./images/09.png)
 
 
 ## npgeohash.isin(poi, codes)

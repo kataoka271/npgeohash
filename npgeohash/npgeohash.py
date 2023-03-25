@@ -220,8 +220,11 @@ def compress(codes: Iterable[str], *, accuracy: float = 1.0) -> list[str]:
         compressed = []
         for c, v in d.items():
             if len(v) >= 32 * accuracy:
+                for e in compressed:
+                    if e.startswith(c):
+                        compressed.remove(e)
                 compressed.append(c)
-            else:
+            elif c[:-1] not in compressed:
                 compressed.extend(v)
         if len(input_codes) == len(compressed):
             break
