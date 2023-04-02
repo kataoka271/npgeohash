@@ -19,8 +19,8 @@ from typing import Iterable
 import numpy as np
 from folium import Circle, Icon, Map, Marker, Rectangle
 
-import npgeohash.npgeohash as npgeohash
-from IPython.display import Markdown
+from npgeohash import npgeohash
+from IPython.core.display import Markdown
 
 
 def drawbox(mp: Map, codes: Iterable[str], color: str) -> Map:
@@ -212,7 +212,7 @@ nei = npgeohash.many_neighbors(npgeohash.many_neighbors(geohashes))
 print(nei)
 ```
 
-    {'xn774cp', 'xn774cm', 'xn76uru', 'xn77h26', 'xn774ck', 'xn774by', 'xn7750b', 'xn77508', 'xn774ch', 'xn7770j', 'xn77728', 'xn77h2h', 'xn7770s', 'xn77h2j', 'xn774bs', 'xn774bw', 'xn77h2y', 'xn76urv', 'xn7770v', 'xn7770u', 'xn775rb', 'xn775py', 'xn7770y', 'xn77h2e', 'xn77h25', 'xn775pu', 'xn77h2f', 'xn774cj', 'xn774cq', 'xn77h2q', 'xn77510', 'xn774bx', 'xn77h2u', 'xn775pz', 'xn7770w', 'xn7770t', 'xn7772b', 'xn774cs', 'xn774bv', 'xn774bu', 'xn77h2t', 'xn774cw', 'xn7770n', 'xn7770p', 'xn7770z', 'xn77h24', 'xn7770h', 'xn7770r', 'xn77h2s', 'xn77518', 'xn77512', 'xn7770q', 'xn774cx', 'xn774ct', 'xn76urg', 'xn77h2k', 'xn7770m', 'xn76urf', 'xn7770x', 'xn774bz', 'xn774bt', 'xn77h2m', 'xn77h2g', 'xn77h2n', 'xn7770k', 'xn77h2v', 'xn77h2w', 'xn774cn', 'xn77722', 'xn77720', 'xn77h2d', 'xn76ury', 'xn77h27', 'xn774cr', 'xn775pv'}
+    {'xn77722', 'xn77h2m', 'xn774bs', 'xn7770u', 'xn77h2y', 'xn774bv', 'xn774cx', 'xn774cw', 'xn774by', 'xn774cp', 'xn7770w', 'xn77h2h', 'xn774bw', 'xn7770q', 'xn7770p', 'xn7770v', 'xn7770x', 'xn77h2w', 'xn77518', 'xn76urg', 'xn77h2j', 'xn774cs', 'xn77h2q', 'xn77720', 'xn76urv', 'xn77728', 'xn77508', 'xn774bx', 'xn7770y', 'xn7770h', 'xn77510', 'xn7770k', 'xn77h2s', 'xn77512', 'xn77h2n', 'xn775pu', 'xn775rb', 'xn76ury', 'xn77h26', 'xn77h2k', 'xn77h2e', 'xn7770z', 'xn774bz', 'xn77h2d', 'xn775py', 'xn774ct', 'xn774cj', 'xn7770n', 'xn7750b', 'xn7770m', 'xn77h2u', 'xn774ch', 'xn77h2g', 'xn77h2v', 'xn76uru', 'xn77h25', 'xn774bt', 'xn774cr', 'xn7770r', 'xn775pz', 'xn7770j', 'xn774cn', 'xn7770t', 'xn7770s', 'xn77h2f', 'xn76urf', 'xn774ck', 'xn774cm', 'xn774bu', 'xn77h24', 'xn77h27', 'xn775pv', 'xn774cq', 'xn77h2t', 'xn7772b'}
     
 
 
@@ -330,4 +330,24 @@ showmap(mp, "./images/08.png")
 
 
 ![](./images/08.png)
+
+
+If you need more performance, Numba jitted functions are available in `npgeohash_jit`.
+However, keep your in mind it takes several seconds to complete compiling functions.
+
+See [performance.ipynb](./notes/performance.ipynb) for performance comparison.
+
+
+```python
+from npgeohash import npgeohash_jit as npgeohash
+
+geohashes = npgeohash.encode_array(arr, 7)
+geohashes
+```
+
+
+
+
+    array(['xn774cn', 'xn7770q', 'xn77h2k'], dtype='<U12')
+
 

@@ -3,26 +3,23 @@ from math import ceil, cos, floor, pi, sqrt
 from typing import Iterable, Iterator
 
 import numpy as np
-from numba import njit
 from numpy.typing import NDArray
 
 base = "0123456789bcdefghjkmnpqrstuvwxyz"
 
 
-@njit
-def create_circle(lat, lon, radius, precision) -> Iterator[str]:
+def create_circle(lat: float, lon: float, radius: float, precision: int) -> Iterator[str]:
     code = encode(lat, lon, precision)
     lat_max, lat_min, lon_max, lon_min = to_latlon(code)
-    w, h = to_distance(lat_max - lat_min, lon_max - lon_min, lat)
-    lat_bits, lon_bits = split_latlon(code)
+    w, h = _to_distance(lat_max - lat_min, lon_max - lon_min, lat)
+    lat_bits, lon_bits = _split_latlon_bin(code)
     rx, ry = (lon - lon_min) / (lon_max - lon_min), (lat - lat_min) / (lat_max - lat_min)
-    pts = gridpoints(rx, ry, radius, w, h)
+    pts = _gridpoints(rx, ry, radius, w, h)
     for i, j in pts:
-        yield join_latlon(lat_bits + j, lon_bits + i, precision)
+        yield _join_latlon_bin(lat_bits + j, lon_bits + i, precision)
 
 
-@njit
-def gridpoints(a, b, r, w, h) -> Iterator[tuple[int, int]]:
+def _gridpoints(a: float, b: float, r: float, w: float, h: float) -> Iterator[tuple[int, int]]:
     def f(x):
         return pow(r, 2) - pow((a - x) * w, 2)
 
@@ -38,16 +35,14 @@ def gridpoints(a, b, r, w, h) -> Iterator[tuple[int, int]]:
         x += 1
 
 
-@njit
-def to_distance(lat_diff, lon_diff, lat) -> tuple[float, float]:
+def _to_distance(lat_diff: float, lon_diff: float, lat: float) -> tuple[float, float]:
     R = 6378137  # 赤道半径
     w = lon_diff * (pi / 180.0) * R * cos(lat * pi / 180.0)
     h = lat_diff * (pi / 180.0) * R
     return (w, h)
 
 
-@njit
-def to_latlon(code) -> tuple[float, float, float, float]:
+def to_latlon(code: str) -> tuple[float, float, float, float]:
     lat_max = 90
     lat_min = -90
     lon_max = 180
@@ -74,23 +69,26 @@ def to_latlon(code) -> tuple[float, float, float, float]:
     return (lat_max, lat_min, lon_max, lon_min)
 
 
-@njit
-def neighbors(code) -> list[str]:
+def neighbors(code: str) -> list[str]:
+    """Get neighbor Geohashes
+
+    >>> neighbors("bbccd")
+    ['bbccd', 'bbccf', 'bbccc', 'bbcc9', 'bbcc3', 'bbcc6', 'bbcc7', 'bbcce', 'bbccg']
+    """
     precision = len(code)
-    lat, lon = split_latlon(code)
-    north = join_latlon(lat + 1, lon, precision)
-    west = join_latlon(lat, lon - 1, precision)
-    south = join_latlon(lat - 1, lon, precision)
-    east = join_latlon(lat, lon + 1, precision)
-    nw = join_latlon(lat + 1, lon - 1, precision)
-    sw = join_latlon(lat - 1, lon - 1, precision)
-    se = join_latlon(lat - 1, lon + 1, precision)
-    ne = join_latlon(lat + 1, lon + 1, precision)
+    lat, lon = _split_latlon_bin(code)
+    north = _join_latlon_bin(lat + 1, lon, precision)
+    west = _join_latlon_bin(lat, lon - 1, precision)
+    south = _join_latlon_bin(lat - 1, lon, precision)
+    east = _join_latlon_bin(lat, lon + 1, precision)
+    nw = _join_latlon_bin(lat + 1, lon - 1, precision)
+    sw = _join_latlon_bin(lat - 1, lon - 1, precision)
+    se = _join_latlon_bin(lat - 1, lon + 1, precision)
+    ne = _join_latlon_bin(lat + 1, lon + 1, precision)
     return [code, north, nw, west, sw, south, se, east, ne]
 
 
-@njit
-def split_latlon(code) -> tuple[float, float]:
+def _split_latlon_bin(code: str) -> tuple[int, int]:
     lat = 0
     lon = 0
     v = 0
@@ -107,8 +105,7 @@ def split_latlon(code) -> tuple[float, float]:
     return (lat, lon)
 
 
-@njit
-def join_latlon(lat, lon, precision) -> str:
+def _join_latlon_bin(lat: int, lon: int, precision: int) -> str:
     nbits = precision * 5
     c = []
     i = nbits // 2 - 1
@@ -129,8 +126,7 @@ def join_latlon(lat, lon, precision) -> str:
     return "".join(c)
 
 
-@njit
-def encode(lat, lon, precision) -> str:
+def encode(lat: float, lon: float, precision: int) -> str:
     lat_max = 90
     lat_min = -90
     lon_max = 180
@@ -171,7 +167,6 @@ def encode(lat, lon, precision) -> str:
 dtype = "U12"  # np.dtype([("hash", "i8"), ("code", "U10")])
 
 
-@njit
 def encode_array(array: NDArray[np.float_], precision: int) -> NDArray[np.str_]:
     values = np.empty(array.shape[0], dtype=dtype)
     for i in range(array.shape[0]):
@@ -179,7 +174,6 @@ def encode_array(array: NDArray[np.float_], precision: int) -> NDArray[np.str_]:
     return values
 
 
-@njit
 def _isin(poi: NDArray[np.str_], codes: NDArray[np.str_]) -> NDArray[np.bool8]:
     arr = np.full(poi.shape[0], False)
     for i in range(poi.shape[0]):
@@ -212,21 +206,38 @@ def many_neighbors(codes: Iterable[str]) -> set[str]:
 
 
 def compress(codes: Iterable[str], *, accuracy: float = 1.0) -> list[str]:
-    input_codes = list(codes)
+    """compress Geohashes
+
+    >>> compress(["bcbcde", "bcbcde", "bcbcd", "bcbef"])
+    ['bcbcd', 'bcbef']
+    >>> compress(["bb"] + ["bcbc" + c for c in base] + ["be"])
+    ['bb', 'be', 'bcbc']
+    >>> compress(["bb"] + ["bcbc" + c for c in base[:26]] + ["be"], accuracy=0.8)
+    ['bb', 'be', 'bcbc']
+    >>> compress(["bb"] + ["bcb" + c + d for c in base[:25] for d in base[:26]] + ["bcbt"], accuracy=0.8)
+    ['bb', 'bcb']
+    >>> compress(["bc1", "bcb0", "bcb1", "bcc0", "bcc1"], accuracy=0.0625)
+    ['bc']
+    >>> compress(["b1", "bb", "be", "bc", "bcb1", "bcb2", "bcb3", "bcb4"], accuracy=0.125)
+    ['b']
+    >>> compress(["bcbc" + c for c in base[:26]] + ["bcb" + c for c in base if c != 'c'], accuracy=0.8)
+    ['bcb']
+    """
     while True:
+        input_codes = []
+        for code in sorted(codes, key=len):
+            if not any(code.startswith(c) for c in input_codes):
+                input_codes.append(code)
         d = defaultdict(list)
         for c in input_codes:
             d[c[:-1]].append(c)
-        compressed = []
+        output_codes = []
         for c, v in d.items():
             if len(v) >= 32 * accuracy:
-                for e in compressed:
-                    if e.startswith(c):
-                        compressed.remove(e)
-                compressed.append(c)
-            elif c[:-1] not in compressed:
-                compressed.extend(v)
-        if len(input_codes) == len(compressed):
+                output_codes.append(c)
+            else:
+                output_codes.extend(v)
+        if len(input_codes) == len(output_codes):
             break
-        input_codes = compressed
-    return compressed
+        codes = output_codes
+    return output_codes
