@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-numba = "^0.56.4"
+numba = "^0.57.1"
 
 
 [tool.poetry.group.dev.dependencies]
