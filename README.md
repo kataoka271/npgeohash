@@ -14,26 +14,58 @@ pip install git+https://github.com/kataoka271/npgeohash.git
 
 
 ```python
+import os
+import time
 from typing import Iterable
 
 import numpy as np
 from folium import Circle, Icon, Map, Marker, Rectangle
-
-from npgeohash import npgeohash
 from IPython.core.display import Markdown
+from selenium import webdriver
+
+import npgeohash.npgeohash as npgeohash
 
 
-def drawbox(mp: Map, codes: Iterable[str], color: str) -> Map:
+def drawbox(m: Map, codes: Iterable[str], color: str) -> Map:
     for code in codes:
         lat_max, lat_min, lon_max, lon_min = npgeohash.to_latlon(code)
         center = ((lat_max, lon_max), (lat_min, lon_min))
-        Rectangle(center, fill=True, fill_opacity=0.3, fill_color=color, color=color).add_to(mp)
-    return mp
+        Rectangle(center, fill=True, fill_opacity=0.3, fill_color=color, color=color).add_to(m)
+    return m
 
 
-def showmap(mp: Map, filename: str):
-    # display(mp)
-    display(Markdown(f"![]({filename})"))
+CACHE = 1
+
+if CACHE == 1:
+    image_index = 0
+
+    def showmap(m: Map):
+        global image_index
+        filename = f"images/{image_index:02d}.png"
+        display(Markdown(f"![]({filename})"))
+        image_index += 1
+
+elif CACHE == 2:
+    image_index = 0
+
+    def showmap(m: Map):
+        global image_index
+        filename = f"images/{image_index:02d}.png"
+        htmlfile = "map.html"
+        m.save(htmlfile)
+        browser = webdriver.Firefox()
+        browser.get(f"file://{os.getcwd()}/{htmlfile}")
+        time.sleep(5)
+        browser.save_screenshot(filename)
+        browser.quit()
+        os.unlink(htmlfile)
+        display(Markdown(f"![]({filename})"))
+        image_index += 1
+
+else:
+
+    def showmap(m: Map):
+        display(m)
 
 
 arr = np.array(
@@ -72,16 +104,16 @@ geohashes
 
 
 ```python
-mp = Map(zoom_start=15)
-drawbox(mp, geohashes, "red")
-mp.fit_bounds(mp.get_bounds())
+m = Map(zoom_start=15)
+drawbox(m, geohashes, "red")
+m.fit_bounds(m.get_bounds())
 for latlon in arr:
-    Marker(latlon).add_to(mp)
-showmap(mp, "./images/00.png")
+    Marker(latlon).add_to(m)
+showmap(m)
 ```
 
 
-![](./images/00.png)
+![](images/00.png)
 
 
 ## npgeohash.neighbors(code)
@@ -97,15 +129,15 @@ print(nei)
 
 
 ```python
-mp = Map(zoom_start=15)
-drawbox(mp, nei, "blue")
-drawbox(mp, [geohashes[0]], "red")
-mp.fit_bounds(mp.get_bounds())
-showmap(mp, "./images/01.png")
+m = Map(zoom_start=15)
+drawbox(m, nei, "blue")
+drawbox(m, [geohashes[0]], "red")
+m.fit_bounds(m.get_bounds())
+showmap(m)
 ```
 
 
-![](./images/01.png)
+![](images/01.png)
 
 
 ## npgeohash.create_circle(latitude, longitude, radius, precision)
@@ -124,16 +156,16 @@ print(cir)
 
 
 ```python
-mp = Map(zoom_start=15)
-drawbox(mp, cir, "blue")
-Marker(arr[0]).add_to(mp)
-Circle(arr[0], 1000, color="yellow").add_to(mp)
-mp.fit_bounds(mp.get_bounds())
-showmap(mp, "./images/02.png")
+m = Map(zoom_start=15)
+drawbox(m, cir, "blue")
+Marker(arr[0]).add_to(m)
+Circle(arr[0], 1000, color="yellow").add_to(m)
+m.fit_bounds(m.get_bounds())
+showmap(m)
 ```
 
 
-![](./images/02.png)
+![](images/02.png)
 
 
 ## npgeohash.isin_circle(poi, latitude, longitude, radius, precision)
@@ -183,25 +215,25 @@ isin
 ```python
 cir = npgeohash.create_circle(lat, lon, 1000, 7)
 
-mp = Map(zoom_start=15)
+m = Map(zoom_start=15)
 
-drawbox(mp, cir, "blue")
+drawbox(m, cir, "blue")
 
-Marker([lat, lon], icon=Icon(icon="home", color="blue")).add_to(mp)
-Circle([lat, lon], 1000, color="yellow").add_to(mp)
+Marker([lat, lon], icon=Icon(icon="home", color="blue")).add_to(m)
+Circle([lat, lon], 1000, color="yellow").add_to(m)
 
 for contain, latlon in zip(isin, poi):
     if contain:
-        Marker(latlon, icon=Icon(icon="ok", color="green")).add_to(mp)
+        Marker(latlon, icon=Icon(icon="ok", color="green")).add_to(m)
     else:
-        Marker(latlon, icon=Icon(icon="remove", color="red")).add_to(mp)
+        Marker(latlon, icon=Icon(icon="remove", color="red")).add_to(m)
 
-mp.fit_bounds(mp.get_bounds())
-showmap(mp, "./images/03.png")
+m.fit_bounds(m.get_bounds())
+showmap(m)
 ```
 
 
-![](./images/03.png)
+![](images/03.png)
 
 
 ## npgeohash.many_neighbors(codes)
@@ -212,19 +244,19 @@ nei = npgeohash.many_neighbors(npgeohash.many_neighbors(geohashes))
 print(nei)
 ```
 
-    {'xn77h2m', 'xn774bu', 'xn77518', 'xn7770m', 'xn775py', 'xn774bt', 'xn77h2k', 'xn7770y', 'xn774bv', 'xn7770h', 'xn7770w', 'xn7770x', 'xn77512', 'xn77720', 'xn77h2j', 'xn77h2s', 'xn77510', 'xn77h2u', 'xn77h2g', 'xn77h2h', 'xn774bs', 'xn774bw', 'xn77h2f', 'xn7770u', 'xn774bz', 'xn77h2y', 'xn77h24', 'xn77h2v', 'xn77h2d', 'xn7770s', 'xn77h2n', 'xn7770k', 'xn77h2e', 'xn774cj', 'xn774cp', 'xn77h25', 'xn76uru', 'xn77h26', 'xn774cs', 'xn774cw', 'xn775pz', 'xn77h27', 'xn7770t', 'xn7770z', 'xn774ck', 'xn7770p', 'xn77h2w', 'xn77h2t', 'xn774bx', 'xn7770n', 'xn774cn', 'xn77508', 'xn77722', 'xn774cm', 'xn76urf', 'xn7770v', 'xn775rb', 'xn774by', 'xn7772b', 'xn774ct', 'xn775pu', 'xn76ury', 'xn7770j', 'xn76urg', 'xn774cx', 'xn7770q', 'xn7770r', 'xn77h2q', 'xn774cr', 'xn7750b', 'xn76urv', 'xn775pv', 'xn77728', 'xn774cq', 'xn774ch'}
+    {'xn774bw', 'xn7770n', 'xn77h2k', 'xn775pz', 'xn76urf', 'xn76uru', 'xn77h2v', 'xn7770h', 'xn774cx', 'xn774bs', 'xn7770m', 'xn77508', 'xn77h25', 'xn77h2e', 'xn774cj', 'xn7770x', 'xn775rb', 'xn77h2w', 'xn77510', 'xn774by', 'xn775pu', 'xn7770r', 'xn77h26', 'xn77h2t', 'xn7770t', 'xn7770u', 'xn7750b', 'xn774ct', 'xn77h2g', 'xn774cn', 'xn77518', 'xn7770w', 'xn77728', 'xn774cr', 'xn77h27', 'xn7770v', 'xn77h2q', 'xn774bu', 'xn7770q', 'xn77h2j', 'xn77h2d', 'xn76ury', 'xn774bx', 'xn7770p', 'xn77h2m', 'xn76urg', 'xn774bz', 'xn77720', 'xn77512', 'xn7770y', 'xn7772b', 'xn774cp', 'xn775py', 'xn7770j', 'xn77h2f', 'xn77h2y', 'xn77h2n', 'xn774ch', 'xn7770s', 'xn7770k', 'xn7770z', 'xn77h24', 'xn77h2u', 'xn77722', 'xn77h2h', 'xn76urv', 'xn774cw', 'xn774bt', 'xn774ck', 'xn77h2s', 'xn774bv', 'xn774cs', 'xn774cq', 'xn775pv', 'xn774cm'}
     
 
 
 ```python
-mp = Map(zoom_start=15)
-drawbox(mp, nei, "blue")
-mp.fit_bounds(mp.get_bounds())
-showmap(mp, "./images/04.png")
+m = Map(zoom_start=15)
+drawbox(m, nei, "blue")
+m.fit_bounds(m.get_bounds())
+showmap(m)
 ```
 
 
-![](./images/04.png)
+![](images/04.png)
 
 
 ## npgeohash.compress(codes, accuracy=1.0)
@@ -238,16 +270,16 @@ lat, lon = arr[0]
 cir = npgeohash.create_circle(lat, lon, 1000, 7)
 compressed = npgeohash.compress(cir, accuracy=1.0)
 
-mp = Map()
-drawbox(mp, compressed, "blue")
-Marker(arr[0]).add_to(mp)
-Circle(arr[0], 1000, color="yellow").add_to(mp)
-mp.fit_bounds(mp.get_bounds())
-showmap(mp, "./images/05.png")
+m = Map()
+drawbox(m, compressed, "blue")
+Marker(arr[0]).add_to(m)
+Circle(arr[0], 1000, color="yellow").add_to(m)
+m.fit_bounds(m.get_bounds())
+showmap(m)
 ```
 
 
-![](./images/05.png)
+![](images/05.png)
 
 
 The following example is obscured geohash compression.
@@ -257,16 +289,16 @@ The following example is obscured geohash compression.
 cir = npgeohash.create_circle(lat, lon, 1000, 7)
 compressed = npgeohash.compress(cir, accuracy=0.6)
 
-mp = Map()
-drawbox(mp, compressed, "blue")
-Marker(arr[0]).add_to(mp)
-Circle(arr[0], 1000, color="yellow").add_to(mp)
-mp.fit_bounds(mp.get_bounds())
-showmap(mp, "./images/06.png")
+m = Map()
+drawbox(m, compressed, "blue")
+Marker(arr[0]).add_to(m)
+Circle(arr[0], 1000, color="yellow").add_to(m)
+m.fit_bounds(m.get_bounds())
+showmap(m)
 ```
 
 
-![](./images/06.png)
+![](images/06.png)
 
 
 The compression is executed recursively.
@@ -276,16 +308,16 @@ The compression is executed recursively.
 cir = npgeohash.create_circle(lat, lon, 1000, 8)
 compressed = npgeohash.compress(cir, accuracy=1.0)
 
-mp = Map()
-drawbox(mp, compressed, "blue")
-Marker([lat, lon]).add_to(mp)
-Circle([lat, lon], 1000, color="yellow").add_to(mp)
-mp.fit_bounds(mp.get_bounds())
-showmap(mp, "./images/07.png")
+m = Map()
+drawbox(m, compressed, "blue")
+Marker([lat, lon]).add_to(m)
+Circle([lat, lon], 1000, color="yellow").add_to(m)
+m.fit_bounds(m.get_bounds())
+showmap(m)
 ```
 
 
-![](./images/07.png)
+![](images/07.png)
 
 
 Obsured recursive compress is executed as below.
@@ -295,16 +327,16 @@ Obsured recursive compress is executed as below.
 cir = npgeohash.create_circle(lat, lon, 1000, 8)
 compressed = npgeohash.compress(cir, accuracy=0.6)
 
-mp = Map()
-drawbox(mp, compressed, "blue")
-Marker([lat, lon]).add_to(mp)
-Circle([lat, lon], 1000, color="yellow").add_to(mp)
-mp.fit_bounds(mp.get_bounds())
-showmap(mp, "./images/09.png")
+m = Map()
+drawbox(m, compressed, "blue")
+Marker([lat, lon]).add_to(m)
+Circle([lat, lon], 1000, color="yellow").add_to(m)
+m.fit_bounds(m.get_bounds())
+showmap(m)
 ```
 
 
-![](./images/09.png)
+![](images/08.png)
 
 
 ## npgeohash.isin(poi, codes)
@@ -315,21 +347,21 @@ cir = npgeohash.create_circle(lat, lon, 1000, 8)
 compressed = npgeohash.compress(cir, accuracy=1.0)
 isin = npgeohash.isin(poi_geohashes, compressed)
 
-mp = Map()
-drawbox(mp, compressed, "blue")
-Marker([lat, lon]).add_to(mp)
-Circle([lat, lon], 1000, color="yellow").add_to(mp)
+m = Map()
+drawbox(m, compressed, "blue")
+Marker([lat, lon]).add_to(m)
+Circle([lat, lon], 1000, color="yellow").add_to(m)
 for contain, latlon in zip(isin, poi):
     if contain:
-        Marker(latlon, icon=Icon(icon="ok", color="green")).add_to(mp)
+        Marker(latlon, icon=Icon(icon="ok", color="green")).add_to(m)
     else:
-        Marker(latlon, icon=Icon(icon="remove", color="red")).add_to(mp)
-mp.fit_bounds(mp.get_bounds())
-showmap(mp, "./images/08.png")
+        Marker(latlon, icon=Icon(icon="remove", color="red")).add_to(m)
+m.fit_bounds(m.get_bounds())
+showmap(m)
 ```
 
 
-![](./images/08.png)
+![](images/09.png)
 
 
 If you need more performance, Numba jitted functions are available in `npgeohash_jit`.
@@ -350,4 +382,22 @@ geohashes
 
     array(['xn774cn', 'xn7770q', 'xn77h2k'], dtype='<U12')
 
+
+
+## npgeohash.create_box(box, precision)
+
+
+```python
+box = (-0.410270, 51.648364, 0.277987, 51.944039)
+
+m = Map()
+drawbox(m, npgeohash.create_box(box, 6), "blue")
+m.add_child(Marker(location=(box[1], box[0])))
+m.add_child(Marker(location=(box[3], box[2])))
+m.fit_bounds(m.get_bounds())
+showmap(m)
+```
+
+
+![](images/10.png)
 

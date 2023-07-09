@@ -8,6 +8,20 @@ from numpy.typing import NDArray
 base = "0123456789bcdefghjkmnpqrstuvwxyz"
 
 
+def create_box(box: tuple[float, float, float, float], precision: int) -> Iterator[str]:
+    """Create Geohashes containing the box of `(west, north, east, south)`"""
+    w, n, e, s = box
+    code1 = encode(n, w, precision)
+    lat1, lon1 = _split_latlon_bin(code1)
+    code2 = encode(s, e, precision)
+    lat2, lon2 = _split_latlon_bin(code2)
+    lat2 = lat2 + 1
+    lon2 = lon2 + 1
+    for y in range(lat1, lat2):
+        for x in range(lon1, lon2):
+            yield _join_latlon_bin(y, x, precision)
+
+
 def create_circle(lat: float, lon: float, radius: float, precision: int) -> Iterator[str]:
     code = encode(lat, lon, precision)
     lat_max, lat_min, lon_max, lon_min = to_latlon(code)
