@@ -9,11 +9,11 @@ base = "0123456789bcdefghjkmnpqrstuvwxyz"
 
 
 def create_box(box: tuple[float, float, float, float], precision: int) -> Iterator[str]:
-    """Create Geohashes containing the box of `(west, north, east, south)`"""
-    w, n, e, s = box
-    code1 = encode(n, w, precision)
+    """Create Geohashes containing the box of `(lon_min, lat_min, lon_max, lat_max)`"""
+    lon_min, lat_min, lon_max, lat_max = box
+    code1 = encode(lat_min, lon_min, precision)
     lat1, lon1 = _split_latlon_bin(code1)
-    code2 = encode(s, e, precision)
+    code2 = encode(lat_max, lon_max, precision)
     lat2, lon2 = _split_latlon_bin(code2)
     lat2 = lat2 + 1
     lon2 = lon2 + 1
