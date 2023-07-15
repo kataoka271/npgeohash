@@ -9,8 +9,8 @@ base = "0123456789bcdefghjkmnpqrstuvwxyz"
 
 
 def create_box(box: tuple[float, float, float, float], precision: int) -> Iterator[str]:
-    """Create Geohashes containing the box of `(lon_min, lat_min, lon_max, lat_max)`"""
-    lon_min, lat_min, lon_max, lat_max = box
+    """Create Geohashes containing the box of `(lat_min, lon_min, lat_max, lon_max)`"""
+    lat_min, lon_min, lat_max, lon_max = box
     code1 = encode(lat_min, lon_min, precision)
     lat1, lon1 = _split_latlon_bin(code1)
     code2 = encode(lat_max, lon_max, precision)
@@ -24,7 +24,7 @@ def create_box(box: tuple[float, float, float, float], precision: int) -> Iterat
 
 def create_circle(lat: float, lon: float, radius: float, precision: int) -> Iterator[str]:
     code = encode(lat, lon, precision)
-    lat_max, lat_min, lon_max, lon_min = to_latlon(code)
+    lat_min, lon_min, lat_max, lon_max = to_latlon(code)
     w, h = _to_distance(lat_max - lat_min, lon_max - lon_min, lat)
     lat_bits, lon_bits = _split_latlon_bin(code)
     rx, ry = (lon - lon_min) / (lon_max - lon_min), (lat - lat_min) / (lat_max - lat_min)
@@ -57,6 +57,7 @@ def _to_distance(lat_diff: float, lon_diff: float, lat: float) -> tuple[float, f
 
 
 def to_latlon(code: str) -> tuple[float, float, float, float]:
+    """convert Geohash `code` to `(lat_min, lon_min, lat_max, lon_max)`"""
     lat_max = 90
     lat_min = -90
     lon_max = 180
@@ -80,7 +81,7 @@ def to_latlon(code: str) -> tuple[float, float, float, float]:
         else:
             lat_max = lat_mid
         i = i - 1
-    return (lat_max, lat_min, lon_max, lon_min)
+    return (lat_min, lon_min, lat_max, lon_max)
 
 
 def neighbors(code: str) -> list[str]:

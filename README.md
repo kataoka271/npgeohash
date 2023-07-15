@@ -28,7 +28,7 @@ import npgeohash.npgeohash as npgeohash
 
 def drawbox(m: Map, codes: Iterable[str], color: str) -> Map:
     for code in codes:
-        lat_max, lat_min, lon_max, lon_min = npgeohash.to_latlon(code)
+        lat_min, lon_min, lat_max, lon_max = npgeohash.to_latlon(code)
         center = ((lat_max, lon_max), (lat_min, lon_min))
         Rectangle(center, fill=True, fill_opacity=0.3, fill_color=color, color=color).add_to(m)
     return m
@@ -244,7 +244,7 @@ nei = npgeohash.many_neighbors(npgeohash.many_neighbors(geohashes))
 print(nei)
 ```
 
-    {'xn774bw', 'xn7770n', 'xn77h2k', 'xn775pz', 'xn76urf', 'xn76uru', 'xn77h2v', 'xn7770h', 'xn774cx', 'xn774bs', 'xn7770m', 'xn77508', 'xn77h25', 'xn77h2e', 'xn774cj', 'xn7770x', 'xn775rb', 'xn77h2w', 'xn77510', 'xn774by', 'xn775pu', 'xn7770r', 'xn77h26', 'xn77h2t', 'xn7770t', 'xn7770u', 'xn7750b', 'xn774ct', 'xn77h2g', 'xn774cn', 'xn77518', 'xn7770w', 'xn77728', 'xn774cr', 'xn77h27', 'xn7770v', 'xn77h2q', 'xn774bu', 'xn7770q', 'xn77h2j', 'xn77h2d', 'xn76ury', 'xn774bx', 'xn7770p', 'xn77h2m', 'xn76urg', 'xn774bz', 'xn77720', 'xn77512', 'xn7770y', 'xn7772b', 'xn774cp', 'xn775py', 'xn7770j', 'xn77h2f', 'xn77h2y', 'xn77h2n', 'xn774ch', 'xn7770s', 'xn7770k', 'xn7770z', 'xn77h24', 'xn77h2u', 'xn77722', 'xn77h2h', 'xn76urv', 'xn774cw', 'xn774bt', 'xn774ck', 'xn77h2s', 'xn774bv', 'xn774cs', 'xn774cq', 'xn775pv', 'xn774cm'}
+    {'xn77h2w', 'xn775rb', 'xn775pu', 'xn77h2t', 'xn77h2s', 'xn7770h', 'xn775pv', 'xn77h2h', 'xn774ck', 'xn7770p', 'xn77518', 'xn774bu', 'xn77510', 'xn7770x', 'xn76ury', 'xn774bv', 'xn77h2u', 'xn76urf', 'xn77722', 'xn7770y', 'xn77728', 'xn77h2v', 'xn7770k', 'xn774cj', 'xn76uru', 'xn77h2k', 'xn77h24', 'xn774cr', 'xn77h2m', 'xn7770z', 'xn7770r', 'xn7772b', 'xn77h2n', 'xn7770j', 'xn7770v', 'xn7770s', 'xn774cs', 'xn77h2f', 'xn7770t', 'xn775pz', 'xn76urv', 'xn77h2q', 'xn77720', 'xn774cx', 'xn774cm', 'xn7770w', 'xn774bs', 'xn77h25', 'xn774bt', 'xn7770m', 'xn774bz', 'xn76urg', 'xn7770q', 'xn774cp', 'xn774ch', 'xn774bx', 'xn77h2d', 'xn77h2j', 'xn77h2e', 'xn77h27', 'xn7750b', 'xn774cw', 'xn774bw', 'xn774cq', 'xn77h26', 'xn77h2y', 'xn7770u', 'xn774ct', 'xn774cn', 'xn77512', 'xn775py', 'xn7770n', 'xn774by', 'xn77h2g', 'xn77508'}
     
 
 
@@ -388,12 +388,12 @@ geohashes
 
 
 ```python
-box = (-0.410270, 51.648364, 0.277987, 51.944039)
+box = (51.648364, -0.410270, 51.944039, 0.277987)
 
 m = Map()
 drawbox(m, npgeohash.create_box(box, 6), "blue")
-m.add_child(Marker(location=(box[1], box[0])))
-m.add_child(Marker(location=(box[3], box[2])))
+m.add_child(Marker(location=(box[0], box[1])))
+m.add_child(Marker(location=(box[2], box[3])))
 m.fit_bounds(m.get_bounds())
 showmap(m)
 ```
