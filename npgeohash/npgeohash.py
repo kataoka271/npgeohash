@@ -34,7 +34,7 @@ def create_circle(lat: float, lon: float, radius: float, precision: int) -> Iter
 
 
 def _gridpoints(a: float, b: float, r: float, w: float, h: float) -> Iterator[tuple[int, int]]:
-    def f(x):
+    def f(x: float):
         return pow(r, 2) - pow((a - x) * w, 2)
 
     x = ceil(a - r / w) - 1
@@ -160,9 +160,9 @@ def encode(lat: float, lon: float, precision: int) -> str:
         else:
             value = value << 1
             lon_max = lon_mid
-        i += 1
-        if i % 5 == 0:
+        if i % 5 == 4:
             code.append(base[value & 0x1F])
+        i += 1
         if i >= nbits:
             break
         lat_mid = (lat_max + lat_min) / 2
@@ -172,9 +172,9 @@ def encode(lat: float, lon: float, precision: int) -> str:
         else:
             value = value << 1
             lat_max = lat_mid
-        i += 1
-        if i % 5 == 0:
+        if i % 5 == 4:
             code.append(base[value & 0x1F])
+        i += 1
 
     return "".join(code)
 
