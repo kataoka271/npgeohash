@@ -18,17 +18,17 @@ def _register(sig: str, f: T) -> T:
 
 encode = _register("(f8, f8, i8)", npgeohash.encode)
 
-to_latlon = _register("Tuple((f8, f8, f8, f8))(string)", npgeohash.to_latlon)
+to_bounds = _register("Tuple((f8, f8, f8, f8))(string)", npgeohash.to_bounds)
 
-_to_distance = _register("(f8, f8, f8)", npgeohash._to_distance)
+_gridsize = _register("(f8, f8, f8)", npgeohash._gridsize)
 
-_split_latlon_bin = _register("Tuple((i8, i8))(string)", npgeohash._split_latlon_bin)
+_split_bits = _register("Tuple((i8, i8))(string)", npgeohash._split_bits)
 
-_join_latlon_bin = _register("string(i8, i8, i8)", npgeohash._join_latlon_bin)
+_join_bits = _register("string(i8, i8, i8)", npgeohash._join_bits)
 
 _gridpoints = _register("(f8, f8, f8, f8, f8)", npgeohash._gridpoints)
 
-create_box = _jit("(Tuple((f8, f8, f8, f8)), i8)", npgeohash.create_box)
+create_rect = _jit("(Tuple((f8, f8, f8, f8)), i8)", npgeohash.create_rect)
 
 create_circle = _jit("(f8, f8, f8, i8)", npgeohash.create_circle)
 

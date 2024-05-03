@@ -1,0 +1,6 @@
+.ipynb_checkpoints/
+/.venv/
+/src/.rustc_info.json
+/src/debug
+/target
+__pycache__/

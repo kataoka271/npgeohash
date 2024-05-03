@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 numba = "^0.57.1"
+maturin = "^1.5.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -17,6 +18,20 @@ folium = "^0.14.0"
 black = "^23.1.0"
 selenium = "^4.10.0"
 
+[project]
+name = "npgeohash"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dynamic = ["version"]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "npgeohash._npgeohash_rs"
+
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"

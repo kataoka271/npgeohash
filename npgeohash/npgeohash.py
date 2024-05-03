@@ -8,29 +8,29 @@ from numpy.typing import NDArray
 base = "0123456789bcdefghjkmnpqrstuvwxyz"
 
 
-def create_box(box: tuple[float, float, float, float], precision: int) -> Iterator[str]:
+def create_rect(box: tuple[float, float, float, float], precision: int) -> Iterator[str]:
     """Create Geohashes containing the box of `(lat_min, lon_min, lat_max, lon_max)`"""
     lat_min, lon_min, lat_max, lon_max = box
     code1 = encode(lat_min, lon_min, precision)
-    lat1, lon1 = _split_latlon_bin(code1)
+    lat1, lon1 = _split_bits(code1)
     code2 = encode(lat_max, lon_max, precision)
-    lat2, lon2 = _split_latlon_bin(code2)
+    lat2, lon2 = _split_bits(code2)
     lat2 = lat2 + 1
     lon2 = lon2 + 1
     for y in range(lat1, lat2):
         for x in range(lon1, lon2):
-            yield _join_latlon_bin(y, x, precision)
+            yield _join_bits(y, x, precision)
 
 
 def create_circle(lat: float, lon: float, radius: float, precision: int) -> Iterator[str]:
     code = encode(lat, lon, precision)
-    lat_min, lon_min, lat_max, lon_max = to_latlon(code)
-    w, h = _to_distance(lat_max - lat_min, lon_max - lon_min, lat)
-    lat_bits, lon_bits = _split_latlon_bin(code)
+    lat_min, lon_min, lat_max, lon_max = to_bounds(code)
+    w, h = _gridsize(lat_max - lat_min, lon_max - lon_min, lat)
+    lat_bits, lon_bits = _split_bits(code)
     rx, ry = (lon - lon_min) / (lon_max - lon_min), (lat - lat_min) / (lat_max - lat_min)
     pts = _gridpoints(rx, ry, radius, w, h)
     for i, j in pts:
-        yield _join_latlon_bin(lat_bits + j, lon_bits + i, precision)
+        yield _join_bits(lat_bits + j, lon_bits + i, precision)
 
 
 def _gridpoints(a: float, b: float, r: float, w: float, h: float) -> Iterator[tuple[int, int]]:
@@ -49,14 +49,14 @@ def _gridpoints(a: float, b: float, r: float, w: float, h: float) -> Iterator[tu
         x += 1
 
 
-def _to_distance(lat_diff: float, lon_diff: float, lat: float) -> tuple[float, float]:
+def _gridsize(lat_diff: float, lon_diff: float, lat: float) -> tuple[float, float]:
     R = 6378137  # 赤道半径
     w = lon_diff * (pi / 180.0) * R * cos(lat * pi / 180.0)
     h = lat_diff * (pi / 180.0) * R
     return (w, h)
 
 
-def to_latlon(code: str) -> tuple[float, float, float, float]:
+def to_bounds(code: str) -> tuple[float, float, float, float]:
     """convert Geohash `code` to `(lat_min, lon_min, lat_max, lon_max)`"""
     lat_max = 90
     lat_min = -90
@@ -91,19 +91,19 @@ def neighbors(code: str) -> list[str]:
     ['bbccd', 'bbccf', 'bbccc', 'bbcc9', 'bbcc3', 'bbcc6', 'bbcc7', 'bbcce', 'bbccg']
     """
     precision = len(code)
-    lat, lon = _split_latlon_bin(code)
-    north = _join_latlon_bin(lat + 1, lon, precision)
-    west = _join_latlon_bin(lat, lon - 1, precision)
-    south = _join_latlon_bin(lat - 1, lon, precision)
-    east = _join_latlon_bin(lat, lon + 1, precision)
-    nw = _join_latlon_bin(lat + 1, lon - 1, precision)
-    sw = _join_latlon_bin(lat - 1, lon - 1, precision)
-    se = _join_latlon_bin(lat - 1, lon + 1, precision)
-    ne = _join_latlon_bin(lat + 1, lon + 1, precision)
+    lat, lon = _split_bits(code)
+    north = _join_bits(lat + 1, lon, precision)
+    west = _join_bits(lat, lon - 1, precision)
+    south = _join_bits(lat - 1, lon, precision)
+    east = _join_bits(lat, lon + 1, precision)
+    nw = _join_bits(lat + 1, lon - 1, precision)
+    sw = _join_bits(lat - 1, lon - 1, precision)
+    se = _join_bits(lat - 1, lon + 1, precision)
+    ne = _join_bits(lat + 1, lon + 1, precision)
     return [code, north, nw, west, sw, south, se, east, ne]
 
 
-def _split_latlon_bin(code: str) -> tuple[int, int]:
+def _split_bits(code: str) -> tuple[int, int]:
     lat = 0
     lon = 0
     v = 0
@@ -120,7 +120,7 @@ def _split_latlon_bin(code: str) -> tuple[int, int]:
     return (lat, lon)
 
 
-def _join_latlon_bin(lat: int, lon: int, precision: int) -> str:
+def _join_bits(lat: int, lon: int, precision: int) -> str:
     nbits = precision * 5
     c = []
     i = nbits // 2 - 1
@@ -189,7 +189,7 @@ def encode_array(array: NDArray[np.float_], precision: int) -> NDArray[np.str_]:
     return values
 
 
-def _isin(poi: NDArray[np.str_], codes: NDArray[np.str_]) -> NDArray[np.bool8]:
+def _isin(poi: NDArray[np.str_], codes: NDArray[np.str_]) -> NDArray[np.bool_]:
     arr = np.full(poi.shape[0], False)
     for i in range(poi.shape[0]):
         for j in range(codes.shape[0]):
@@ -209,7 +209,7 @@ def isin(poi: NDArray[np.str_], codes: Iterable[str]):
 # the following functions cannot support numba compilation due to unsupported type/operation needed
 
 
-def isin_circle(poi: NDArray[np.str_], lat: float, lon: float, radius: float, precision: int) -> NDArray[np.bool8]:
+def isin_circle(poi: NDArray[np.str_], lat: float, lon: float, radius: float, precision: int) -> NDArray[np.bool_]:
     return isin(poi, create_circle(lat, lon, radius, precision))
 
 
