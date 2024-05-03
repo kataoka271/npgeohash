@@ -1,22 +1,6 @@
-[tool.poetry]
-name = "npgeohash"
-version = "0.1.0"
-description = ""
-authors = ["Hiroaki Kataoka <k_hir@hotmail.com>"]
-readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.10"
-numba = "^0.57.1"
-maturin = "^1.5.1"
-
-
-[tool.poetry.group.dev.dependencies]
-jupyterlab = "^3.6.1"
-matplotlib = "^3.7.1"
-folium = "^0.14.0"
-black = "^23.1.0"
-selenium = "^4.10.0"
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
 
 [project]
 name = "npgeohash"
@@ -27,11 +11,29 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dynamic = ["version"]
+dependencies = [
+    "numba==0.57.1"
+]
+
+[tool.poetry]
+name = "npgeohash"
+version = "0.1.0"
+description = ""
+authors = ["Hiroaki Kataoka <k_hir@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numba = "^0.57.1"
+
+[tool.poetry.group.dev.dependencies]
+jupyterlab = "^3.6.1"
+matplotlib = "^3.7.1"
+folium = "^0.14.0"
+black = "^23.1.0"
+selenium = "^4.10.0"
+maturin = "^1.5.1"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
 module-name = "npgeohash._npgeohash_rs"
-
-[build-system]
-requires = ["maturin>=1.5,<2.0"]
-build-backend = "maturin"
